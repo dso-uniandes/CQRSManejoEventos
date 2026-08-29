@@ -18,7 +18,13 @@ def importar_modelos_alchemy():
     import aeroalpes.modulos.vehiculos.infraestructura.dto
     import aeroalpes.modulos.vuelos.infraestructura.dto
 
-def comenzar_consumidor():
+def _ejecutar_con_contexto(app, funcion):
+    def _wrapper():
+        with app.app_context():
+            funcion()
+    return _wrapper
+
+def comenzar_consumidor(app):
     """
     Este es un código de ejemplo. Aunque esto sea funcional puede ser un poco peligroso tener 
     threads corriendo por si solos. Mi sugerencia es en estos casos usar un verdadero manejador
@@ -34,20 +40,20 @@ def comenzar_consumidor():
     import aeroalpes.modulos.vuelos.infraestructura.consumidores as vuelos
 
     # Suscripción a eventos
-    threading.Thread(target=cliente.suscribirse_a_eventos).start()
-    threading.Thread(target=hoteles.suscribirse_a_eventos).start()
-    threading.Thread(target=pagos.suscribirse_a_eventos).start()
-    threading.Thread(target=precios_dinamicos.suscribirse_a_eventos).start()
-    threading.Thread(target=vehiculos.suscribirse_a_eventos).start()
-    threading.Thread(target=vuelos.suscribirse_a_eventos).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, cliente.suscribirse_a_eventos)).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, hoteles.suscribirse_a_eventos)).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, pagos.suscribirse_a_eventos)).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, precios_dinamicos.suscribirse_a_eventos)).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, vehiculos.suscribirse_a_eventos)).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, vuelos.suscribirse_a_eventos)).start()
 
     # Suscripción a comandos
-    threading.Thread(target=cliente.suscribirse_a_comandos).start()
-    threading.Thread(target=hoteles.suscribirse_a_comandos).start()
-    threading.Thread(target=pagos.suscribirse_a_comandos).start()
-    threading.Thread(target=precios_dinamicos.suscribirse_a_comandos).start()
-    threading.Thread(target=vehiculos.suscribirse_a_comandos).start()
-    threading.Thread(target=vuelos.suscribirse_a_comandos).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, cliente.suscribirse_a_comandos)).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, hoteles.suscribirse_a_comandos)).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, pagos.suscribirse_a_comandos)).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, precios_dinamicos.suscribirse_a_comandos)).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, vehiculos.suscribirse_a_comandos)).start()
+    threading.Thread(target=_ejecutar_con_contexto(app, vuelos.suscribirse_a_comandos)).start()
 
 def create_app(configuracion={}):
     # Init la aplicacion de Flask
@@ -71,7 +77,7 @@ def create_app(configuracion={}):
     with app.app_context():
         db.create_all()
         if not app.config.get('TESTING'):
-            comenzar_consumidor()
+            comenzar_consumidor(app)
 
      # Importa Blueprints
     from . import cliente

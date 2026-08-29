@@ -72,24 +72,18 @@ class UnidadTrabajo(ABC):
             dispatcher.send(signal=f'{type(evento).__name__}Integracion', evento=evento)
 
 def is_flask():
-    try:
-        from flask import session
-        return True
-    except Exception as e:
-        return False
+    from flask import has_app_context
+    return has_app_context()
 
 def registrar_unidad_de_trabajo(serialized_obj):
-    from aeroalpes.config.uow import UnidadTrabajoSQLAlchemy
-    from flask import session
-    
-
-    session['uow'] = serialized_obj
+    from flask import g
+    g.uow = serialized_obj
 
 def flask_uow():
-    from flask import session
+    from flask import g
     from aeroalpes.config.uow import UnidadTrabajoSQLAlchemy
-    if session.get('uow'):
-        return session['uow']
+    if getattr(g, 'uow', None):
+        return g.uow
     else:
         uow_serialized = pickle.dumps(UnidadTrabajoSQLAlchemy())
         registrar_unidad_de_trabajo(uow_serialized)
