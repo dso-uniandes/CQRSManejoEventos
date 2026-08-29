@@ -51,6 +51,8 @@ services:
       - clusterName=cluster-a
       - zkServers=zookeeper:2181
       - metadataServiceUri=metadata-store:zk:zookeeper:2181
+      - advertisedAddress=bookie
+      - bookieId=bookie:3181
     depends_on:
       zookeeper:
         condition: service_healthy
