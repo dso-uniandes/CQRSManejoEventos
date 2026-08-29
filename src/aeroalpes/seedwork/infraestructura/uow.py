@@ -58,6 +58,10 @@ class UnidadTrabajo(ABC):
     def savepoint(self):
         raise NotImplementedError
 
+    @abstractmethod
+    def _aplicar_lock(self, batch: Batch):
+        raise NotImplementedError
+
     def registrar_batch(self, operacion, *args, lock=Lock.PESIMISTA, **kwargs):
         batch = Batch(operacion, lock, *args, **kwargs)
         self.batches.append(batch)

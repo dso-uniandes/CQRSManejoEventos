@@ -1,5 +1,6 @@
 from aeroalpes.config.db import db
-from aeroalpes.seedwork.infraestructura.uow import UnidadTrabajo, Batch
+from aeroalpes.seedwork.dominio.entidades import AgregacionRaiz
+from aeroalpes.seedwork.infraestructura.uow import Batch, Lock, UnidadTrabajo
 
 class UnidadTrabajoSQLAlchemy(UnidadTrabajo):
 
@@ -23,9 +24,22 @@ class UnidadTrabajoSQLAlchemy(UnidadTrabajo):
     def batches(self) -> list[Batch]:
         return self._batches             
 
+    def _aplicar_lock(self, batch: Batch):
+        if batch.lock != Lock.PESIMISTA:
+            return
+
+        for arg in batch.args:
+            if not isinstance(arg, AgregacionRaiz) or not getattr(arg, 'id', None):
+                continue
+            id_agregado = str(arg.id)
+            for persistido in db.session.identity_map.values():
+                if str(getattr(persistido, 'id', '')) != id_agregado:
+                    continue
+                db.session.refresh(persistido, with_for_update=True)
+
     def commit(self):
         for batch in self.batches:
-            lock = batch.lock
+            self._aplicar_lock(batch)
             batch.operacion(*batch.args, **batch.kwargs)
 
         db.session.commit()
