@@ -9,7 +9,7 @@ from flask import Response
 from aeroalpes.modulos.vuelos.aplicacion.mapeadores import MapeadorReservaDTOJson
 from aeroalpes.modulos.vuelos.aplicacion.comandos.crear_reserva import CrearReserva
 from aeroalpes.modulos.vuelos.aplicacion.queries.obtener_reserva import ObtenerReserva
-from aeroalpes.seedwork.aplicacion.comandos import ejecutar_commando
+from aeroalpes.modulos.vuelos.infraestructura.despachadores import Despachador
 from aeroalpes.seedwork.aplicacion.queries import ejecutar_query
 
 bp = api.crear_blueprint('vuelos', '/vuelos')
@@ -37,12 +37,11 @@ def reservar_asincrona():
         map_reserva = MapeadorReservaDTOJson()
         reserva_dto = map_reserva.externo_a_dto(reserva_dict)
 
-        comando = CrearReserva(reserva_dto.fecha_creacion, reserva_dto.fecha_actualizacion, reserva_dto.id, reserva_dto.itinerarios)
-        
-        # TODO Reemplaze es todo código sincrono y use el broker de eventos para propagar este comando de forma asíncrona
-        # Revise la clase Despachador de la capa de infraestructura
-        ejecutar_commando(comando)
-        
+        comando = CrearReserva(reserva_dto.fecha_creacion, reserva_dto.fecha_actualizacion, reserva_dto.id, reserva_dict.get('id_usuario'), reserva_dto.itinerarios)
+
+        despachador = Despachador()
+        despachador.publicar_comando(comando, 'comandos-reserva')
+
         return Response('{}', status=202, mimetype='application/json')
     except ExcepcionDominio as e:
         return Response(json.dumps(dict(error=str(e))), status=400, mimetype='application/json')
