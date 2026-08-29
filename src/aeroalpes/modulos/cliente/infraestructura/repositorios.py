@@ -15,6 +15,10 @@ class RepositorioUsuariosSQLite(RepositorioUsuarios):
         usuario_dto = db.session.query(UsuarioDTO).filter_by(id=str(id)).one()
         return self._mapeador.dto_a_entidad(usuario_dto)
 
+    def obtener_por_email(self, address: str, dominio: str) -> Usuario:
+        usuario_dto = db.session.query(UsuarioDTO).filter_by(email_address=address, email_dominio=dominio).one()
+        return self._mapeador.dto_a_entidad(usuario_dto)
+
     def obtener_todos(self) -> list[Usuario]:
         return [self._mapeador.dto_a_entidad(dto) for dto in db.session.query(UsuarioDTO).all()]
 

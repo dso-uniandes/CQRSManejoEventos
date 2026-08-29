@@ -1,3 +1,4 @@
+from uuid import UUID
 from aeroalpes.seedwork.dominio.repositorios import Mapeador
 from aeroalpes.modulos.cliente.dominio.entidades import Usuario
 from aeroalpes.modulos.cliente.dominio.objetos_valor import Email, Nombre
@@ -22,11 +23,14 @@ class MapeadorUsuario(Mapeador):
         return usuario_dto
 
     def dto_a_entidad(self, dto: UsuarioDTO) -> Usuario:
-        usuario = Usuario()
-        usuario.nombre = Nombre(nombres=dto.nombres, apellidos=dto.apellidos)
-        usuario.email = Email(
-            address=dto.email_address,
-            dominio=dto.email_dominio,
-            es_empresarial=dto.es_empresarial,
+        return Usuario(
+            id=UUID(str(dto.id)),
+            fecha_creacion=dto.fecha_creacion,
+            fecha_actualizacion=dto.fecha_actualizacion,
+            nombre=Nombre(nombres=dto.nombres, apellidos=dto.apellidos),
+            email=Email(
+                address=dto.email_address,
+                dominio=dto.email_dominio,
+                es_empresarial=dto.es_empresarial,
+            ),
         )
-        return usuario

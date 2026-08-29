@@ -31,7 +31,13 @@ class Entidad:
     def id(self, id: uuid.UUID) -> None:
         if not IdEntidadEsInmutable(self).es_valido():
             raise IdDebeSerInmutableExcepcion()
-        self._id = self.siguiente_id()
+
+        if id is None or isinstance(id, property):
+            self._id = self.siguiente_id()
+        elif isinstance(id, uuid.UUID):
+            self._id = id
+        else:
+            self._id = uuid.UUID(str(id))
         
 
 @dataclass
